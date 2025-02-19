@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书文本格式转换器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .convert-button {
+            background-color: #ff2442;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .convert-button:hover {
+            background-color: #e61e39;
+        }
+        .copy-button {
+            background-color: #22c55e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .copy-button:hover {
+            background-color: #16a34a;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .toggle-icons {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .toggle-icons:hover {
+            background-color: #4f46e5;
+        }
+        .toggle-icons.active {
+            background-color: #4f46e5;
+        }
+        .description {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .description h3 {
+            margin-top: 0;
+            color: #334155;
+        }
+        .description ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .description .features {
+            color: #059669;
+        }
+        .description .limitations {
+            color: #dc2626;
+        }
+        .color-text-1 { color: #FF6B6B; font-weight: bold; }
+        .color-text-2 { color: #4ECDC4; font-weight: bold; }
+        .color-text-3 { color: #45B7D1; font-weight: bold; }
+        .color-text-4 { color: #96CEB4; font-weight: bold; }
+        .color-text-5 { color: #D4A5A5; font-weight: bold; }
+        .color-text-6 { color: #9B59B6; font-weight: bold; }
+        .color-text-7 { color: #3498DB; font-weight: bold; }
+        .color-text-8 { color: #E67E22; font-weight: bold; }
+        .color-text-9 { color: #1ABC9C; font-weight: bold; }
+        .color-text-10 { color: #F1C40F; font-weight: bold; }
+        .content-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            margin-top: 30px;
+        }
+        .feedback-section {
+            flex: 1;
+            padding: 15px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+        .feedback-section h3 {
+            margin-top: 0;
+            color: #334155;
+        }
+        .feedback-form textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .feedback-form input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .feedback-form button {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .feedback-form button:hover {
+            background-color: #4f46e5;
+        }
+        .feedback-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .feedback-status.success {
+            background-color: #dcfce7;
+            color: #166534;
+            display: block;
+        }
+        .feedback-status.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>小红书文本格式转换器</h1>
+        <p>请输入 Markdown 文本：</p>
+        <textarea id="input" placeholder="在这里输入 Markdown 文本..."></textarea>
+        <div class="button-group">
+            <button class="toggle-icons" id="toggleIcons" onclick="toggleIcons()">开启图标装饰</button>
+            <button class="convert-button" onclick="convertText()">转换格式</button>
+            <button class="copy-button" onclick="copyToClipboard()">复制到剪贴板</button>
+        </div>
+        <p>转换结果：</p>
+        <div class="output" id="output"></div>
+        
+        <div class="content-wrapper">
+            <div class="description">
+                <h3>功能说明</h3>
+                <div class="features">
+                    <strong>主要功能：</strong>
+                    <ul>
+                        <li>实现不同级 Markdown 标题的自动编号</li>
+                        <li>添加图标修饰符</li>
+                    </ul>
+                </div>
+                <div class="limitations">
+                    <strong>不足：</strong>
+                    <ul>
+                        <li>无法列表实现缩进</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="feedback-section">
+                <h3>功能反馈</h3>
+                <form class="feedback-form" id="feedbackForm" onsubmit="submitFeedback(event)">
+                    <textarea name="suggestion" placeholder="请输入您期待的新功能..." required></textarea>
+                    <input type="email" name="email" placeholder="请输入您的邮箱..." required>
+                    <button type="submit">提交反馈</button>
+                </form>
+                <div id="feedbackStatus" class="feedback-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let useIcons = false;
+        const textColors = [
+            'color-text-1', 'color-text-2', 'color-text-3', 'color-text-4', 'color-text-5',
+            'color-text-6', 'color-text-7', 'color-text-8', 'color-text-9', 'color-text-10'
+        ];
+
+        function toggleIcons() {
+            useIcons = !useIcons;
+            const button = document.getElementById('toggleIcons');
+            button.textContent = useIcons ? '关闭图标装饰' : '开启图标装饰';
+            button.classList.toggle('active');
+        }
+
+        function toChineseNumber(num) {
+            const chineseNumbers = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+            if (num <= 10) return chineseNumbers[num - 1];
+            if (num < 20) return '十' + (num % 10 === 0 ? '' : chineseNumbers[num % 10 - 1]);
+            const tens = chineseNumbers[Math.floor(num / 10) - 1];
+            return tens + '十' + (num % 10 === 0 ? '' : chineseNumbers[num % 10 - 1]);
+        }
+
+        const circledNumbers = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'];
+        const colorfulIcons = ['🌈', '✨', '💫', '⭐', '🌟', '💖', '💝', '💕', '💗', '💓', '🎨', '🎯', '🎪', '🎭', '🎠'];
+        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't'];
+
+        function convertText() {
+            const input = document.getElementById('input').value;
+            let output = input;
+
+            // 转换标题
+            let h1Count = 0;
+            let h2Count = 0;
+            let h3Count = 0;
+            let h4Count = 0;
+
+            output = output.replace(/^# (.*$)/gm, (match, content) => {
+                h1Count++;
+                return `${toChineseNumber(h1Count)}、${content}`;
+            });
+            output = output.replace(/^## (.*$)/gm, (match, content) => {
+                h2Count++;
+                return `(${h2Count}) ${content}`;
+            });
+            output = output.replace(/^### (.*$)/gm, (match, content) => {
+                h3Count++;
+                return `${circledNumbers[h3Count - 1]} ${content}`;
+            });
+            output = output.replace(/^#### (.*$)/gm, (match, content) => {
+                h4Count++;
+                return `${letters[h4Count - 1]}. ${content}`;
+            });
+
+            // 转换列表
+            let lines = output.split('\n');
+            let currentLevel = 0;
+            let numbersByLevel = {};
+
+            lines = lines.map(line => {
+                const listMatch = line.match(/^(\s*)-\s(.*)$/);
+                if (listMatch) {
+                    const spaces = (listMatch[1] || '').length;
+                    const level = Math.floor(spaces / 2);
+
+                    if (!numbersByLevel[level]) {
+                        numbersByLevel[level] = 0;
+                    }
+
+                    numbersByLevel[level]++;
+                    const indent = '    '.repeat(level);
+                    const number = numbersByLevel[level];
+
+                    return `${indent}${number}. ${listMatch[2]}`;
+                }
+
+                if (!line.trim().startsWith('-')) {
+                    numbersByLevel = {};
+                }
+                return line;
+            });
+
+            output = lines.join('\n');
+
+            // 转换强调
+            output = output.replace(/\*\*(.*?)\*\*/g, (match, content) => {
+                const randomColor = textColors[Math.floor(Math.random() * textColors.length)];
+                const coloredText = `<span class="${randomColor}">${content}</span>`;
+                if (useIcons) {
+                    const randomIcon = colorfulIcons[Math.floor(Math.random() * colorfulIcons.length)];
+                    return `${coloredText}${randomIcon}`;
+                }
+                return coloredText;
+            });
+            output = output.replace(/\*(.*?)\*/g, '𝘐$1𝘐');
+
+            // 显示结果
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = output;
+        }
+
+        function copyToClipboard() {
+            const outputDiv = document.getElementById('output');
+            const text = outputDiv.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const copyButton = document.querySelector('.copy-button');
+                const originalText = copyButton.innerText;
+                copyButton.innerText = '复制成功！';
+                copyButton.style.backgroundColor = '#16a34a';
+                setTimeout(() => {
+                    copyButton.innerText = originalText;
+                    copyButton.style.backgroundColor = '#22c55e';
+                }, 2000);
+            }).catch(err => {
+                alert('复制失败，请手动复制');
+                console.error('复制失败：', err);
+            });
+        }
+
+        async function submitFeedback(event) {
+    event.preventDefault();
+    const form = event.target;
+    const suggestion = form.suggestion.value;
+    const email = form.email.value;
+    const statusDiv = document.getElementById('feedbackStatus');
+
+    try {
+        const response = await fetch('https://formspree.io/f/meoevgdv', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: suggestion,
+                email: email,
+                _subject: '小红书文本转换器功能反馈',
+                _replyto: email
+            })
+        });
+
+        if (response.ok) {
+            statusDiv.textContent = '感谢您的反馈！';
+            statusDiv.className = 'feedback-status success';
+            form.reset();
+        } else {
+            throw new Error('提交失败');
+        }
+    } catch (error) {
+        statusDiv.textContent = '提交失败，请稍后重试';
+        statusDiv.className = 'feedback-status error';
+    }
+        }
+    </script>
+</body>
+</html>
